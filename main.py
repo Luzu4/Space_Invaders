@@ -3,6 +3,9 @@ import time
 import random
 from operator import itemgetter
 
+ALIGNMENT = "center"
+FONT = ("Courier", 24, "normal")
+HIGH_SCORE = 0
 INVADERS_POS = [(-150, 90), (-150, 60), (-150, 30), (-150, 0),
                 (50, 0), (100, 0), (150, 0), (0, 0), (-50, 0), (-100, 0),
                 (50, 30), (100, 30), (150, 30), (0, 30), (-50, 30), (-100, 30),
@@ -50,6 +53,28 @@ class InvaderBullet(turtle.Turtle):
         self.penup()
 
 
+class Scoreboard(turtle.Turtle):
+    def __init__(self):
+        super().__init__()
+        self.score = 0
+        self.penup()
+        self.color('white')
+        self.goto(0, 250)
+        self.hideturtle()
+        self.update_scoreboard()
+
+    def update_scoreboard(self):
+        self.write(f'Score: {self.score}, HIGH SCORE: {HIGH_SCORE}', align=ALIGNMENT, font=FONT)
+
+    def increase_score(self):
+        global HIGH_SCORE
+        self.score += 100
+        if HIGH_SCORE < self.score:
+            HIGH_SCORE += 100
+        self.clear()
+        self.update_scoreboard()
+
+
 class Game:
     def __init__(self):
         self.window = turtle.Screen()
@@ -65,6 +90,7 @@ class Game:
         self.count_heights = 0
         self.speed = 2
         self.plane = Ship()
+        self.scoreboard = Scoreboard()
         self.set_invaders()
         self.window.onkeypress(self.move_left, 'Left')
         self.window.onkeypress(self.move_right, 'Right')
@@ -72,6 +98,10 @@ class Game:
         self.move()
         self.window.listen()
         self.window.mainloop()
+
+    def new_game(self):
+        self.window.clearscreen()
+        self.__init__()
 
     def move_right(self):
         if self.plane.xcor() < 400:
@@ -97,9 +127,7 @@ class Game:
         invader_rocket.setposition(x, y)
         self.invaders_bullets.append(invader_rocket)
 
-    def new_game(self):
-        self.window.clearscreen()
-        self.__init__()
+
 
     def move(self):
 
@@ -124,6 +152,7 @@ class Game:
                     self.bullets.remove(rocket)
                     rocket.hideturtle()
                     ship.hideturtle()
+                    self.scoreboard.increase_score()
         self.count += 1
         self.count_heights += 1
         self.heights = 0

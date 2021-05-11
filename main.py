@@ -6,21 +6,24 @@ from operator import itemgetter
 ALIGNMENT = "center"
 FONT = ("Courier", 24, "normal")
 HIGH_SCORE = 0
+INVADERS_DOWN_SPEED = 500
 INVADERS_POS = [(-150, 90), (-150, 60), (-150, 30), (-150, 0),
                 (50, 0), (100, 0), (150, 0), (0, 0), (-50, 0), (-100, 0),
                 (50, 30), (100, 30), (150, 30), (0, 30), (-50, 30), (-100, 30),
                 (50, 60), (100, 60), (0, 60), (-50, 60), (-100, 60),
-                (50, 90), (100, 90), (0, 90), (-50, 90), (-100, 90), (150, 60), (150, 90)
-                ]
+                (50, 90), (100, 90), (0, 90), (-50, 90), (-100, 90), (150, 60), (150, 90)]
+
 # Sort list for
 INVADERS_POS.sort(key=itemgetter(0))
 
+turtle.register_shape("smallinvader.gif")
+turtle.register_shape("smallship.gif")
+turtle.register_shape("spaceinvaders.gif")
 
 class Ship(turtle.Turtle):
     def __init__(self):
         super().__init__()
-        self.fillcolor('red')
-        self.pencolor('white')
+        self.shape('smallship.gif')
         self.shapesize(3, 3, 3)
         self.penup()
         self.left(90)
@@ -30,6 +33,7 @@ class Ship(turtle.Turtle):
 class Invaders(turtle.Turtle):
     def __init__(self):
         super().__init__()
+        self.shape('smallinvader.gif')
         self.color('white')
         self.penup()
         self.right(90)
@@ -48,7 +52,7 @@ class InvaderBullet(turtle.Turtle):
     def __init__(self):
         super().__init__()
         self.shape('square')
-        self.shapesize(0.1, 0.1, 0.1)
+        self.shapesize(0.2, 0.2, 0.2)
         self.color('red')
         self.penup()
 
@@ -75,11 +79,97 @@ class Scoreboard(turtle.Turtle):
         self.update_scoreboard()
 
 
+class Title(turtle.Turtle):
+    def __init__(self):
+        super().__init__()
+        self.shape('spaceinvaders.gif')
+        self.goto(0,200)
+
 class Game:
     def __init__(self):
         self.window = turtle.Screen()
         self.window.setup(800, 600)
+        self.window.tracer(0)
+        self.menu()
+        self.window.mainloop()
+
+    def make_square(self,pen):
+        pen.forward(120)
+        pen.left(90)
+        pen.forward(30)
+        pen.left(90)
+
+    def menu(self):
+        self.window.clearscreen()
         self.window.bgcolor('black')
+        title = Title()
+        self.window.tracer(0)
+        pen = turtle.Turtle()
+        pen.pencolor('white')
+        pen.hideturtle()
+        pen.goto(-60, 0)
+        for i in range(2):
+            self.make_square(pen)
+        pen.penup()
+        pen.goto(-53,6)
+        pen.write('New Game', font=('Arial', 12, 'normal'))
+        pen.goto(-60,-60)
+        pen.pendown()
+        for i in range(2):
+            self.make_square(pen)
+        pen.penup()
+        pen.goto(-53,-54)
+        pen.write('Difficulty', font=('Arial', 12, 'normal'))
+
+        def button_click(x, y):
+            if -60 <= x <= 60 and 0 <= y <= 30:
+                self.new_game()
+            if -60 <= x <= 60 and -60 <= y <= -30:
+                self.difficult_choice()
+
+        turtle.onscreenclick(button_click, 1)
+        turtle.listen()
+        turtle.done()
+
+    def difficult_choice(self):
+        self.window.clearscreen()
+        self.window.bgcolor('black')
+        title = Title()
+        self.window.tracer(0)
+        pen = turtle.Turtle()
+        pen.pencolor('white')
+        pen.hideturtle()
+        pen.goto(-60, 0)
+        for i in range(2):
+            self.make_square(pen)
+        pen.penup()
+        pen.goto(-53, 6)
+        pen.write('EASY', font=('Arial', 12, 'normal'))
+        pen.goto(-60, -60)
+        pen.pendown()
+        for i in range(2):
+            self.make_square(pen)
+        pen.penup()
+        pen.goto(-53,-54)
+        pen.write('HARD', font=('Arial', 12, 'normal'))
+
+        def button_click(x, y):
+            global INVADERS_DOWN_SPEED
+            if -60 <= x <= 60 and 0 <= y <= 30:
+                INVADERS_DOWN_SPEED = 500
+                self.menu()
+            if -60 <= x <= 60 and -60 <= y <= -30:
+                INVADERS_DOWN_SPEED = 50
+                self.menu()
+
+        turtle.onscreenclick(button_click, 1)
+        turtle.listen()
+        turtle.done()
+
+    def new_game(self):
+        self.window.clearscreen()
+        self.window.bgpic('space.gif')
+        # self.window.bgcolor('black')
         self.window.tracer(0)
         self.window.title('Space Invaders')
         self.invaders_ships = []
@@ -97,11 +187,6 @@ class Game:
         self.window.onkey(self.fire, 'space')
         self.move()
         self.window.listen()
-        self.window.mainloop()
-
-    def new_game(self):
-        self.window.clearscreen()
-        self.__init__()
 
     def move_right(self):
         if self.plane.xcor() < 400:
@@ -127,10 +212,7 @@ class Game:
         invader_rocket.setposition(x, y)
         self.invaders_bullets.append(invader_rocket)
 
-
-
     def move(self):
-
         if self.invaders_ships[len(self.invaders_ships) - 1].xcor() >= 400 or self.invaders_ships[0].xcor() <= -400:
             self.speed *= -1
         for ship in self.invaders_ships:
@@ -158,7 +240,7 @@ class Game:
         self.heights = 0
         if len(self.invaders_ships) == 0:
             self.new_game()
-        if self.count_heights == 500:
+        if self.count_heights == INVADERS_DOWN_SPEED:
             self.heights = -10
             self.count_heights = 0
         if self.count == 50:

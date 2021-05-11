@@ -7,11 +7,13 @@ ALIGNMENT = "center"
 FONT = ("Courier", 24, "normal")
 HIGH_SCORE = 0
 INVADERS_DOWN_SPEED = 500
-INVADERS_POS = [(-150, 90), (-150, 60), (-150, 30), (-150, 0),
-                (50, 0), (100, 0), (150, 0), (0, 0), (-50, 0), (-100, 0),
+INVADERS_POS = [(-150, 90), (-150, 60), (-150, 30), (-150, 0),(-150, 120),(-100, 120),(-50, 120),(0, 120),
+                (50, 0), (100, 0), (150, 0), (0, 0), (-50, 0), (-100, 0),(100, 120),(50, 120),(150, 120),
                 (50, 30), (100, 30), (150, 30), (0, 30), (-50, 30), (-100, 30),
                 (50, 60), (100, 60), (0, 60), (-50, 60), (-100, 60),
-                (50, 90), (100, 90), (0, 90), (-50, 90), (-100, 90), (150, 60), (150, 90)]
+                (50, 90), (100, 90), (0, 90), (-50, 90), (-100, 90), (150, 60), (150, 90),
+                (-200, 120),(-200, 90), (-200, 60), (-200, 30),(-200, 0),(-250, 120),(-250, 90), (-250, 60), (-250, 30),(-250, 0),
+                (-300, 120),(-300, 90), (-300, 60), (-300, 30),(-300, 0),(-350, 120),(-350, 90), (-350, 60), (-350, 30),(-350, 0),]
 
 # Sort list for
 INVADERS_POS.sort(key=itemgetter(0))
@@ -19,6 +21,7 @@ INVADERS_POS.sort(key=itemgetter(0))
 turtle.register_shape("smallinvader.gif")
 turtle.register_shape("smallship.gif")
 turtle.register_shape("spaceinvaders.gif")
+
 
 class Ship(turtle.Turtle):
     def __init__(self):
@@ -83,7 +86,8 @@ class Title(turtle.Turtle):
     def __init__(self):
         super().__init__()
         self.shape('spaceinvaders.gif')
-        self.goto(0,200)
+        self.goto(0, 200)
+
 
 class Game:
     def __init__(self):
@@ -93,11 +97,24 @@ class Game:
         self.menu()
         self.window.mainloop()
 
-    def make_square(self,pen):
+    def make_square(self, pen):
         pen.forward(120)
         pen.left(90)
         pen.forward(30)
         pen.left(90)
+
+    def draw_buttons(self, pen):
+        pen.pencolor('white')
+        pen.hideturtle()
+        pen.goto(-60, 0)
+        for i in range(2):
+            self.make_square(pen)
+        pen.penup()
+        pen.goto(-60, -60)
+        pen.pendown()
+        for i in range(2):
+            self.make_square(pen)
+        pen.penup()
 
     def menu(self):
         self.window.clearscreen()
@@ -105,21 +122,11 @@ class Game:
         title = Title()
         self.window.tracer(0)
         pen = turtle.Turtle()
-        pen.pencolor('white')
-        pen.hideturtle()
-        pen.goto(-60, 0)
-        for i in range(2):
-            self.make_square(pen)
-        pen.penup()
-        pen.goto(-53,6)
-        pen.write('New Game', font=('Arial', 12, 'normal'))
-        pen.goto(-60,-60)
-        pen.pendown()
-        for i in range(2):
-            self.make_square(pen)
-        pen.penup()
-        pen.goto(-53,-54)
+        self.draw_buttons(pen)
+        pen.goto(-53, -54)
         pen.write('Difficulty', font=('Arial', 12, 'normal'))
+        pen.goto(-53, 6)
+        pen.write('New Game', font=('Arial', 12, 'normal'))
 
         def button_click(x, y):
             if -60 <= x <= 60 and 0 <= y <= 30:
@@ -137,21 +144,11 @@ class Game:
         title = Title()
         self.window.tracer(0)
         pen = turtle.Turtle()
-        pen.pencolor('white')
-        pen.hideturtle()
-        pen.goto(-60, 0)
-        for i in range(2):
-            self.make_square(pen)
-        pen.penup()
+        self.draw_buttons(pen)
+        pen.goto(-53, -54)
+        pen.write('HARD', font=('Arial', 12, 'normal'))
         pen.goto(-53, 6)
         pen.write('EASY', font=('Arial', 12, 'normal'))
-        pen.goto(-60, -60)
-        pen.pendown()
-        for i in range(2):
-            self.make_square(pen)
-        pen.penup()
-        pen.goto(-53,-54)
-        pen.write('HARD', font=('Arial', 12, 'normal'))
 
         def button_click(x, y):
             global INVADERS_DOWN_SPEED
@@ -216,8 +213,10 @@ class Game:
         if self.invaders_ships[len(self.invaders_ships) - 1].xcor() >= 400 or self.invaders_ships[0].xcor() <= -400:
             self.speed *= -1
         for ship in self.invaders_ships:
-            if ship.ycor() <= self.plane.ycor():
+            if ship.ycor() == self.plane.ycor():
+                print('??')
                 self.new_game()
+                break
             ship.goto(ship.xcor() + self.speed, ship.ycor() + self.heights)
         for invader_rocket in self.invaders_bullets:
             invader_rocket.goto(invader_rocket.xcor(), invader_rocket.ycor() - 5)
